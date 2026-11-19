@@ -1,7 +1,15 @@
 <script lang="ts">
 	import PageHero from '#lib/components/PageHero.svelte';
+	import Seo from '#lib/components/Seo.svelte';
 	import { site } from '#lib/data/site.ts';
 </script>
+
+<Seo
+	title="Terms of Service — SpiceRoute Restaurant & Bistro"
+	description="The fine print, in plain words: reservations, orders & delivery, allergies and changes. Mock terms for design review, last updated 19 November 2026."
+	path="/terms"
+	image="dining-room"
+/>
 
 <PageHero eyebrow="Terms of Service" title="The Fine Print," script="in Plain Words" desc="Last updated: 19 November 2026. This is a mock terms page for design review." />
 

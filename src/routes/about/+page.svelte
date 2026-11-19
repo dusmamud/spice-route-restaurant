@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ArrowRight, Award, Heart, Leaf, Users } from '@lucide/svelte';
 	import PageHero from '#lib/components/PageHero.svelte';
+	import Seo from '#lib/components/Seo.svelte';
 	import Picture from '#lib/components/Picture.svelte';
 	import { site } from '#lib/data/site.ts';
 
@@ -17,6 +18,13 @@
 		{ icon: Heart, title: 'Served with warmth', text: 'We remember names, allergies, anniversaries — and your usual table.' }
 	];
 </script>
+
+<Seo
+	title="About Us — SpiceRoute Restaurant & Bistro, Bandra West"
+	description="Our story since 2016: one tandoor, one wok and a family recipe book — now three kitchens, a private dining room and catering for 500 in Bandra West, Mumbai."
+	path="/about"
+	image="dining-room"
+/>
 
 <PageHero eyebrow="About Us" title="More Than" script="a Restaurant" desc="A place to unwind, celebrate and savor great food, crafted with passion and served with warmth." />
 

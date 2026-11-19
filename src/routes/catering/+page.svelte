@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Check, Crown, Sparkles, Users } from '@lucide/svelte';
 	import PageHero from '#lib/components/PageHero.svelte';
+	import Seo from '#lib/components/Seo.svelte';
 	import Picture from '#lib/components/Picture.svelte';
 	import { cateringPackages, inr } from '#lib/data/site.ts';
 
@@ -17,11 +18,22 @@
 			formError = 'Please enter your name, a valid 10-digit mobile number, and an event date.';
 			return;
 		}
+		if (!Number.isFinite(guests) || guests < 20 || guests > 500) {
+			formError = 'Catering covers 20 to 500 guests. For fewer than 20, our private dining room seats up to 12 — see the private dining page.';
+			return;
+		}
 		formError = '';
 		sent = true;
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
 </script>
+
+<Seo
+	title="Private Dining & Catering — SpiceRoute Restaurant & Bistro"
+	description="Private dining for 12 and catering for 20–500 guests in Bandra West, Mumbai. Silver ₹499, Gold ₹799, Platinum ₹1,199 per person, with live counters and a dedicated event manager."
+	path="/catering"
+	image="private-dining"
+/>
 
 <PageHero eyebrow="Private Dining & Catering" title="Celebrate," script="We'll Cook" desc="A private dining room for 12, and catering for 20 to 500 guests — weddings, office parties, birthdays and everything in between." />
 
@@ -34,7 +46,7 @@
 				<p class="mt-2 leading-relaxed text-muted">
 					Twelve seats around one long table, candle-lit, with a dedicated server and a set menu chosen with our chef. Ideal for anniversaries, family milestones and quiet business dinners. Book 48 hours ahead; a ₹2,000 advance holds the room (adjusted against your bill).
 				</p>
-				<a href="/reservations" class="mt-4 inline-flex min-h-12 items-center rounded-full bg-gold px-6 font-bold text-cocoa-deep">Reserve the Room</a>
+				<a href="/private-dining" class="mt-4 inline-flex min-h-12 items-center rounded-full bg-gold px-6 font-bold text-cocoa-deep">See the Private Dining Room →</a>
 			</div>
 		</div>
 		<div>

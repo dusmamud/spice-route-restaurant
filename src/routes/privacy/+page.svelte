@@ -1,7 +1,15 @@
 <script lang="ts">
 	import PageHero from '#lib/components/PageHero.svelte';
+	import Seo from '#lib/components/Seo.svelte';
 	import { site } from '#lib/data/site.ts';
 </script>
+
+<Seo
+	title="Privacy Policy — SpiceRoute Restaurant & Bistro"
+	description="How SpiceRoute handles your personal data: what we collect when you book or order, how we use it, and your rights. Last updated 19 November 2026."
+	path="/privacy"
+	image="dining-room"
+/>
 
 <PageHero eyebrow="Privacy Policy" title="Your Privacy," script="Respected" desc="Last updated: 19 November 2026. This is a mock policy for design review." />
 

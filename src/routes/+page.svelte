@@ -3,17 +3,38 @@
 	import Picture from '#lib/components/Picture.svelte';
 	import DishCard from '#lib/components/DishCard.svelte';
 	import FeatureIcon from '#lib/components/FeatureIcon.svelte';
+	import Seo from '#lib/components/Seo.svelte';
 	import Stars from '#lib/components/Stars.svelte';
-	import { dishes, features, galleryItems, inr, signatureSelections, site, testimonials, todaysSpecials } from '#lib/data/site.ts';
+	import { chefs, dishes, features, galleryItems, inr, pressQuotes, signatureSelections, site, sourcingPartners, testimonials, todaysSpecials } from '#lib/data/site.ts';
+	import { openStatus } from '#lib/open.ts';
+
+	let now = $state(new Date());
+	const status = $derived(openStatus(now));
+
+	$effect(() => {
+		const t = window.setInterval(() => (now = new Date()), 60000);
+		return () => window.clearInterval(t);
+	});
 
 	const specials = todaysSpecials
 		.map((s) => ({ ...s, dish: dishes.find((d) => d.id === s.dishId)! }))
 		.filter((s) => s.dish);
+	const specialIds = new Set(specials.map((s) => s.dish.id));
+	// Chef's Picks must not repeat Today's Specials — pick the highest-rated
+	// dishes that are NOT already in the specials row.
 	const chefsPicks = dishes
-		.filter((d) => d.tag === "Chef's Pick" || d.tag === 'Signature' || d.tag === 'Most Loved')
+		.filter((d) => !specialIds.has(d.id))
+		.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews)
 		.slice(0, 4);
 	const marqueeItems = [...dishes.map((d) => d.name), ...dishes.map((d) => d.name)];
 </script>
+
+<Seo
+	title="SpiceRoute Restaurant & Bistro — A Culinary Journey of Flavors"
+	description="SpiceRoute Restaurant & Bistro, Bandra West Mumbai — Hyderabadi biryani, butter chicken, Continental pastas, Asian wok dishes & desserts. Book a table or order online."
+	path="/"
+	image="hero-biryani"
+/>
 
 <!-- HERO — faithful to the reference: dark warm bokeh, copper handi biryani -->
 <section class="relative overflow-hidden bg-cocoa-deep text-white" aria-label="Welcome to SpiceRoute">
@@ -39,8 +60,11 @@
 				</a>
 			</div>
 			<div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/75">
-				<span class="flex items-center gap-1.5"><Star size={16} class="text-gold" fill="currentColor" aria-hidden="true" /> 4.8 · 3,200+ reviews</span>
-				<span class="flex items-center gap-1.5"><Clock size={16} class="text-gold-soft" aria-hidden="true" /> {site.hoursShort}</span>
+				<span class="flex items-center gap-1.5"><Star size={16} class="text-gold" fill="currentColor" aria-hidden="true" /> {site.rating} · {site.reviewCount.toLocaleString('en-IN')}+ reviews</span>
+				<span class="flex items-center gap-1.5">
+					<span class="h-2 w-2 rounded-full {status.open ? 'bg-green-400' : 'bg-amber-400'}" aria-hidden="true"></span>
+					{status.label} · {status.detail}
+				</span>
 				<span class="flex items-center gap-1.5"><MapPin size={16} class="text-gold-soft" aria-hidden="true" /> {site.addressShort}</span>
 			</div>
 		</div>
@@ -183,6 +207,29 @@
 	</div>
 </section>
 
+<!-- MEET THE CHEFS -->
+<section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8" aria-label="Meet the chefs">
+	<div class="reveal flex flex-wrap items-end justify-between gap-3">
+		<div>
+			<p class="text-xs font-bold tracking-[0.28em] text-maroon uppercase">The people behind the pass</p>
+			<h2 class="mt-2 font-display text-[clamp(1.75rem,4.5vw,2.5rem)] font-bold">Meet the Chefs</h2>
+		</div>
+		<a href="/chefs" class="flex min-h-12 items-center gap-1.5 rounded-full border-2 border-cocoa px-5 font-bold transition-colors duration-200 hover:bg-cocoa hover:text-white">All Chefs <ArrowRight size={18} aria-hidden="true" /></a>
+	</div>
+	<div class="mt-8 grid gap-5 sm:grid-cols-3">
+		{#each chefs as chef}
+			<a href="/chefs" class="group overflow-hidden rounded-3xl border border-line bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg">
+				<Picture name={chef.image} alt={chef.alt} width={1280} height={1600} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" imgClass="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+				<span class="block p-5">
+					<span class="block text-xs font-bold tracking-[0.2em] text-maroon uppercase">{chef.role}</span>
+					<span class="mt-1 block font-display text-xl font-bold group-hover:text-maroon">{chef.name}</span>
+					<span class="mt-1 block text-sm text-muted">{chef.years} · “{chef.quote}”</span>
+				</span>
+			</a>
+		{/each}
+	</div>
+</section>
+
 <!-- TESTIMONIALS -->
 <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8" aria-label="What guests say">
 	<div class="reveal text-center">
@@ -209,6 +256,20 @@
 	</div>
 </section>
 
+<!-- PRESS -->
+<section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8" aria-label="In the press">
+	<div class="reveal grid gap-5 rounded-[2rem] border border-line bg-white p-6 shadow-sm sm:p-8 md:grid-cols-3">
+		{#each pressQuotes.slice(0, 3) as q}
+			<figure>
+				<Quote size={24} class="text-gold" fill="currentColor" aria-hidden="true" />
+				<blockquote class="mt-2 leading-relaxed">“{q.quote}”</blockquote>
+				<figcaption class="mt-3 text-sm font-bold">{q.source} <span class="font-normal text-muted">· {q.date}</span></figcaption>
+			</figure>
+		{/each}
+	</div>
+	<p class="mt-4 text-center text-sm"><a href="/press" class="font-bold text-maroon underline underline-offset-4">More press &amp; awards →</a></p>
+</section>
+
 <!-- HOURS / LOCATION STRIP -->
 <section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8" aria-label="Visit us">
 	<div class="reveal grid gap-5 rounded-[2rem] bg-cocoa-deep p-6 text-white sm:p-8 lg:grid-cols-3">
@@ -229,6 +290,28 @@
 		<div class="flex flex-col items-start justify-center gap-3">
 			<a href="/reservations" class="flex min-h-12 items-center rounded-full bg-gold px-6 font-bold text-cocoa-deep transition-transform duration-200 hover:scale-[1.03]">Book a Table</a>
 			<a href="tel:{site.phoneHref.replace('tel:', '')}" class="text-sm font-semibold text-gold-soft underline underline-offset-4">{site.phoneDisplay}</a>
+		</div>
+	</div>
+</section>
+
+<!-- SOURCING -->
+<section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8" aria-label="Where our food comes from">
+	<div class="reveal grid gap-5 lg:grid-cols-[1fr_2fr]">
+		<div class="overflow-hidden rounded-[2rem] shadow-md">
+			<Picture name="sourcing-farm" alt="Fresh farm vegetables, Alphonso mangoes and spices in brass bowls" width={1920} height={1280} sizes="(min-width: 1024px) 33vw, 100vw" imgClass="h-full min-h-56 w-full object-cover" />
+		</div>
+		<div>
+			<p class="text-xs font-bold tracking-[0.28em] text-maroon uppercase">From our farms</p>
+			<h2 class="mt-2 font-display text-[clamp(1.75rem,4.5vw,2.5rem)] font-bold">Named Farms, Named Spices</h2>
+			<p class="mt-3 max-w-xl leading-relaxed text-muted">We buy from people we know, by name — so the menu can tell you exactly where your food came from.</p>
+			<ul class="mt-5 space-y-3">
+				{#each sourcingPartners as p}
+					<li class="flex gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
+						<span class="text-gold" aria-hidden="true">✦</span>
+						<span><strong>{p.name}</strong> — {p.what}<br /><span class="text-sm text-muted">{p.detail}</span></span>
+					</li>
+				{/each}
+			</ul>
 		</div>
 	</div>
 </section>

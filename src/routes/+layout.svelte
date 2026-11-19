@@ -9,10 +9,11 @@
 	import '@fontsource/inter/600.css';
 	import '@fontsource/inter/700.css';
 	import '../app.css';
+	import { afterNavigate, onNavigate } from '$app/navigation';
 	import Lenis from 'lenis';
 	import gsap from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
-	import { Phone, ShoppingBag } from '@lucide/svelte';
+	import { CalendarCheck, Phone, ShoppingBag } from '@lucide/svelte';
 	import CartDrawer from '#lib/components/CartDrawer.svelte';
 	import Header from '#lib/components/Header.svelte';
 	import Footer from '#lib/components/Footer.svelte';
@@ -32,6 +33,7 @@
 		slogan: site.tagline,
 		description:
 			'SpiceRoute Restaurant & Bistro — multi-cuisine dining in Bandra West, Mumbai. Hyderabadi biryani, butter chicken, Continental pastas, Asian wok dishes and desserts, crafted with passion and served with warmth.',
+		image: `${site.url}/images/hero-biryani-1200.jpg`,
 		telephone: site.phoneDisplay,
 		email: site.email,
 		servesCuisine: ['North Indian', 'Continental', 'Asian', 'Desserts'],
@@ -45,17 +47,37 @@
 			postalCode: '400050',
 			addressCountry: 'IN'
 		},
-		openingHoursSpecification: {
-			'@type': 'OpeningHoursSpecification',
-			dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-			opens: '11:30',
-			closes: '23:00'
-		},
+		openingHoursSpecification: [
+			{
+				'@type': 'OpeningHoursSpecification',
+				dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+				opens: '11:30',
+				closes: '15:30'
+			},
+			{
+				'@type': 'OpeningHoursSpecification',
+				dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+				opens: '19:00',
+				closes: '23:00'
+			}
+		],
 		menu: `${site.url}/menu`,
+		hasMenu: {
+			'@type': 'Menu',
+			url: `${site.url}/menu`,
+			hasMenuSection: [
+				{ '@type': 'MenuSection', name: 'Indian Classics', url: `${site.url}/menu?category=Indian%20Classics` },
+				{ '@type': 'MenuSection', name: 'Continental', url: `${site.url}/menu?category=Continental` },
+				{ '@type': 'MenuSection', name: 'Asian', url: `${site.url}/menu?category=Asian` },
+				{ '@type': 'MenuSection', name: 'Desserts', url: `${site.url}/menu?category=Desserts` },
+				{ '@type': 'MenuSection', name: 'Beverages', url: `${site.url}/menu?category=Beverages` },
+				{ '@type': 'MenuSection', name: 'Breads & Rice', url: `${site.url}/menu?category=Breads%20%26%20Rice` }
+			]
+		},
 		acceptsReservations: 'True',
-		hasMap: 'https://www.google.com/maps/search/SpiceRoute+Restaurant+Bandra+West+Mumbai',
+		hasMap: site.directionsUrl,
 		geo: { '@type': 'GeoCoordinates', latitude: 19.0596, longitude: 72.8295 },
-		sameAs: ['https://www.instagram.com/', 'https://www.facebook.com/']
+		sameAs: [site.socials.instagram, site.socials.facebook, site.socials.x]
 	};
 
 	$effect(() => {
@@ -81,34 +103,46 @@
 		};
 	});
 
-	$effect(() => {
-		const els = document.querySelectorAll('.reveal');
-		const io = new IntersectionObserver(
+	// View Transitions, reduced-motion gated: a 200ms crossfade between pages.
+	// Skipped entirely when the browser has no View Transitions API or the
+	// user prefers reduced motion.
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
+
+	// Reveal-on-scroll. The layout persists across client-side navigation,
+	// so .reveal elements on a newly visited page must be observed again —
+	// afterNavigate re-runs the observer. Elements already visible are
+	// skipped (they already carry .is-visible).
+	let revealObserver: IntersectionObserver | null = null;
+	function observeReveals() {
+		if (revealObserver) revealObserver.disconnect();
+		revealObserver = new IntersectionObserver(
 			(entries) => {
 				for (const e of entries) if (e.isIntersecting) e.target.classList.add('is-visible');
 			},
 			{ threshold: 0.12 }
 		);
-		els.forEach((el) => io.observe(el));
-		return () => io.disconnect();
+		document.querySelectorAll('.reveal:not(.is-visible)').forEach((el) => revealObserver!.observe(el));
+	}
+	afterNavigate(() => observeReveals());
+	$effect(() => {
+		observeReveals();
+		return () => revealObserver?.disconnect();
 	});
 </script>
 
 <svelte:head>
-	<title>SpiceRoute Restaurant &amp; Bistro — A Culinary Journey of Flavors</title>
-	<meta
-		name="description"
-		content="SpiceRoute Restaurant & Bistro, Bandra West Mumbai — Hyderabadi biryani, butter chicken, Continental pastas, Asian wok dishes & desserts. Book a table or order online."
-	/>
-	<link rel="canonical" href={site.url} />
+	<!-- Per-page title/description/canonical/OG live on each page via the Seo
+	     component — the layout carries only the shared Restaurant JSON-LD. -->
 	<meta property="og:type" content="website" />
-	<meta property="og:title" content="SpiceRoute Restaurant & Bistro — A Culinary Journey of Flavors" />
-	<meta
-		property="og:description"
-		content="Multi-cuisine dining with a perfect blend of tradition and modern taste. Book a table or order online in Bandra West, Mumbai."
-	/>
-	<meta property="og:url" content={site.url} />
-	<meta name="twitter:card" content="summary_large_image" />
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`}
 </svelte:head>
@@ -142,7 +176,7 @@
 
 <nav
 	aria-label="Quick actions"
-	class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+	class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
 >
 	<a href={site.phoneHref} class="flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-semibold text-ink">
 		<Phone size={20} class="text-maroon" aria-hidden="true" />
@@ -156,6 +190,10 @@
 	>
 		<span class="text-[#25d366]"><WhatsAppIcon size={20} /></span>
 		WhatsApp
+	</a>
+	<a href="/reservations" class="flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-semibold text-ink">
+		<CalendarCheck size={20} class="text-maroon" aria-hidden="true" />
+		Book
 	</a>
 	<button
 		type="button"

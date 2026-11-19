@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { Menu, Phone, Search, ShoppingBag, X } from '@lucide/svelte';
+	import { goto } from '$app/navigation';
 	import Logo from '#lib/components/Logo.svelte';
 	import { navLinks, site } from '#lib/data/site.ts';
+	import { openStatus } from '#lib/open.ts';
 	import { cart } from '#lib/cart.svelte.ts';
 	import { drawer } from '#lib/drawer.svelte.ts';
 	import { page } from '$app/state';
@@ -9,10 +11,18 @@
 	let menuOpen = $state(false);
 	let searchOpen = $state(false);
 	let query = $state('');
+	let now = $state(new Date());
+	const status = $derived(openStatus(now));
+
+	$effect(() => {
+		const t = window.setInterval(() => (now = new Date()), 60000);
+		return () => window.clearInterval(t);
+	});
 
 	function goSearch() {
 		if (!query.trim()) return;
-		window.location.href = `/menu?q=${encodeURIComponent(query.trim())}`;
+		searchOpen = false;
+		goto(`/menu?q=${encodeURIComponent(query.trim())}`);
 	}
 </script>
 
@@ -25,7 +35,7 @@
 				<a
 					href={link.href}
 					aria-current={page.url.pathname === link.href ? 'page' : undefined}
-					class="rounded-full px-4 py-2.5 text-[0.95rem] font-medium text-white/85 transition-colors duration-200 hover:text-white {page.url.pathname === link.href
+					class="rounded-full px-4 py-2.5 text-[0.95rem] font-medium whitespace-nowrap text-white/85 transition-colors duration-200 hover:text-white {page.url.pathname === link.href
 						? 'nav-active text-gold-soft'
 						: ''}"
 				>
@@ -59,10 +69,17 @@
 			</button>
 			<a
 				href="/order"
-				class="hidden min-h-12 items-center rounded-full bg-gold px-5 font-bold text-cocoa-deep shadow transition-transform duration-200 hover:scale-[1.03] md:flex"
+				class="hidden min-h-12 items-center rounded-full bg-gold px-5 font-bold whitespace-nowrap text-cocoa-deep shadow transition-transform duration-200 hover:scale-[1.03] md:flex"
 			>
 				Order Now
 			</a>
+			<span
+				class="hidden items-center gap-2 rounded-full border border-white/20 px-3 py-2 text-xs font-bold whitespace-nowrap xl:flex"
+				title={status.detail}
+			>
+				<span class="h-2 w-2 rounded-full {status.open ? 'bg-green-400' : 'bg-amber-400'}" aria-hidden="true"></span>
+				{status.label} · {status.detail}
+			</span>
 			<a
 				href={site.phoneHref}
 				aria-label="Call SpiceRoute"

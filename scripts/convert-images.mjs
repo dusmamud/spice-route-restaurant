@@ -1,22 +1,27 @@
-// Convert PNG masters in static/images/original/ into the delivery chain:
+// Convert PNG masters in originals/ (project root, NOT deployed) into the
+// delivery chain:
 //   <name>-<width>.avif  (quality 50, alpha kept)
 //   <name>-<width>.webp  (quality 80, alpha kept)
 //   <name>-<width>.jpg   (quality 84) + <name>-800.jpg fallback — opaque only
 //   <name>-<width>.png   (resized, alpha kept) — transparent only, PNG fallback
 // Widths: 480 / 800 / 1200 / 1600. Run: npm run images
+// Pass names to convert only those, e.g. `npm run images -- garlic-butter-naan jeera-rice`.
 // Transparent PNG masters (filename ends with -transparent) keep their alpha
 // in AVIF/WebP/PNG; JPG is skipped for them because JPG has no alpha.
 import { readdir, mkdir } from 'node:fs/promises';
 import { join, parse } from 'node:path';
 import sharp from 'sharp';
 
-const SRC = new URL('../static/images/original/', import.meta.url);
+const SRC = new URL('../originals/', import.meta.url);
 const OUT = new URL('../static/images/', import.meta.url);
 const WIDTHS = [480, 800, 1200, 1600];
 
-const files = (await readdir(SRC)).filter((f) => f.toLowerCase().endsWith('.png'));
+const only = process.argv.slice(2).map((a) => a.replace(/\.png$/, ''));
+const files = (await readdir(SRC))
+	.filter((f) => f.toLowerCase().endsWith('.png'))
+	.filter((f) => only.length === 0 || only.includes(parse(f).name));
 if (files.length === 0) {
-	console.log('No PNG masters in static/images/original/ — nothing to convert.');
+	console.log('No matching PNG masters in originals/ — nothing to convert.');
 	process.exit(0);
 }
 await mkdir(OUT, { recursive: true });

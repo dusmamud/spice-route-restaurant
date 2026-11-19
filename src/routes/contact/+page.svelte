@@ -1,7 +1,11 @@
 <script lang="ts">
-	import { Check, Clock, Mail, MapPin, Phone } from '@lucide/svelte';
+	import { Check, Clock, Mail, MapPin, Navigation, Phone } from '@lucide/svelte';
 	import PageHero from '#lib/components/PageHero.svelte';
-	import { site } from '#lib/data/site.ts';
+	import Seo from '#lib/components/Seo.svelte';
+	import { deliveryZones, site } from '#lib/data/site.ts';
+	import { openStatus } from '#lib/open.ts';
+
+	const status = openStatus();
 
 	let name = $state('');
 	let email = $state('');
@@ -19,6 +23,13 @@
 	}
 </script>
 
+<Seo
+	title="Contact — SpiceRoute Restaurant & Bistro, Bandra West"
+	description="Find SpiceRoute on Linking Road, Bandra West, Mumbai. Call +91 98200 12345, WhatsApp us, or get directions. Open 11:30 AM–3:30 PM and 7–11 PM, every day."
+	path="/contact"
+	image="dining-room"
+/>
+
 <PageHero eyebrow="Contact" title="Find Us," script="Talk to Us" desc="Questions, feedback, bulk orders or a big celebration — we reply within one working day." />
 
 <section class="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:px-8">
@@ -26,11 +37,23 @@
 		<div class="space-y-4">
 			<div class="flex gap-3 rounded-3xl border border-line bg-white p-5 shadow-sm">
 				<MapPin size={24} class="shrink-0 text-maroon" aria-hidden="true" />
-				<div><h2 class="font-display text-lg font-bold">Address</h2><p class="mt-1 text-sm leading-relaxed text-muted">{site.address}</p></div>
+				<div>
+					<h2 class="font-display text-lg font-bold">Address</h2>
+					<p class="mt-1 text-sm leading-relaxed text-muted">{site.address}</p>
+					<a href={site.directionsUrl} target="_blank" rel="noopener" class="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full bg-gold px-5 text-sm font-bold text-cocoa-deep">
+						<Navigation size={16} aria-hidden="true" /> Get Directions
+					</a>
+				</div>
 			</div>
 			<div class="flex gap-3 rounded-3xl border border-line bg-white p-5 shadow-sm">
 				<Clock size={24} class="shrink-0 text-maroon" aria-hidden="true" />
-				<div><h2 class="font-display text-lg font-bold">Hours</h2><p class="mt-1 text-sm leading-relaxed text-muted">{site.hours}<br />Lunch 11:30 AM – 3:30 PM · Dinner 7 – 11 PM</p></div>
+				<div>
+					<h2 class="font-display text-lg font-bold">Hours</h2>
+					<p class="mt-1 text-sm leading-relaxed text-muted">
+						<span class="inline-flex items-center gap-1.5 font-bold {status.open ? 'text-green-700' : 'text-amber-700'}"><span class="h-2 w-2 rounded-full {status.open ? 'bg-green-600' : 'bg-amber-500'}"></span>{status.label} — {status.detail}</span><br />
+						{site.hours}<br />Lunch 11:30 AM – 3:30 PM · Dinner 7 – 11 PM
+					</p>
+				</div>
 			</div>
 			<div class="flex gap-3 rounded-3xl border border-line bg-white p-5 shadow-sm">
 				<Phone size={24} class="shrink-0 text-maroon" aria-hidden="true" />
@@ -42,11 +65,16 @@
 			</div>
 		</div>
 		<div class="mt-6">
-			<h2 class="font-display text-lg font-bold">Delivery zones</h2>
-			<ul class="mt-3 flex flex-wrap gap-2">
-				{#each site.areas as a}<li class="rounded-full bg-cream-deep px-3 py-1.5 text-sm font-medium">{a}</li>{/each}
+			<h2 class="font-display text-lg font-bold">Delivery zones &amp; fees</h2>
+			<ul class="mt-3 space-y-2 text-sm">
+				{#each deliveryZones as z}
+					<li class="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white px-4 py-2.5 shadow-sm">
+						<span class="font-semibold">{z.area}</span>
+						<span class="text-muted">{z.fee === 0 ? 'Free delivery' : `₹${z.fee} fee`} · {z.min > 0 ? `min order ₹${z.min} · ` : ''}{z.eta}</span>
+					</li>
+				{/each}
 			</ul>
-			<p class="mt-3 text-sm text-muted">Free delivery on orders of ₹499+. A ₹40 fee applies below that. GST of 5% applies on food.</p>
+			<p class="mt-3 text-sm text-muted">Free delivery on orders of ₹499+ in every zone. GST of 5% applies on food.</p>
 		</div>
 	</div>
 

@@ -1,0 +1,12 @@
+# Cache headers for Cloudflare Pages.
+# Images + hashed app assets are immutable for a year; HTML is always fresh.
+/images/*
+  Cache-Control: public, max-age=31536000, immutable
+/_app/*
+  Cache-Control: public, max-age=31536000, immutable
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+/*
+  Cache-Control: public, max-age=0, must-revalidate

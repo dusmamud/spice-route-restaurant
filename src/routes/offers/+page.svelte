@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { BadgePercent, Copy } from '@lucide/svelte';
 	import PageHero from '#lib/components/PageHero.svelte';
+	import Seo from '#lib/components/Seo.svelte';
 	import { offers } from '#lib/data/site.ts';
 
 	let copied = $state('');
@@ -10,6 +11,13 @@
 		window.setTimeout(() => (copied = ''), 1500);
 	}
 </script>
+
+<Seo
+	title="Offers — SpiceRoute Restaurant & Bistro"
+	description="Current offers at SpiceRoute, Bandra West: weekday lunch ₹100 off (LUNCH299), Family Feast 20% off (FEAST20), dessert on us (SWEET999) and a birthday lava cake (BDAYCAKE)."
+	path="/offers"
+	image="tandoori-platter"
+/>
 
 <PageHero eyebrow="Offers" title="Eat Well," script="Spend Less" desc="Current offers at SpiceRoute. Mention the code when you book, or apply it at checkout — one offer per visit." />
 

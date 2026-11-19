@@ -1,17 +1,24 @@
 <script lang="ts">
-	import { ArrowLeft, Check, Flame, Leaf, Plus, Wheat } from '@lucide/svelte';
+	import { ArrowLeft, Check, Flame, Heart, Leaf, Plus, Share2, Wheat } from '@lucide/svelte';
 	import Picture from '#lib/components/Picture.svelte';
 	import DishCard from '#lib/components/DishCard.svelte';
 	import Stars from '#lib/components/Stars.svelte';
 	import { addToOrder } from '#lib/cart.svelte.ts';
+	import { favourites } from '#lib/favourites.svelte.ts';
 	import { drawer } from '#lib/drawer.svelte.ts';
-	import { inr, site } from '#lib/data/site.ts';
+	import { dishes, inr, pairsWith, site } from '#lib/data/site.ts';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 	const dish = $derived(data.dish);
 	const related = $derived(data.related);
+	const pairs = $derived(
+		(pairsWith[dish.id] ?? [])
+			.map((p) => ({ ...p, dish: dishes.find((d) => d.id === p.id)! }))
+			.filter((p) => p.dish)
+	);
 	let added = $state(false);
+	let shared = $state(false);
 	let qty = $state(1);
 
 	const spiceLabel = $derived(['No spice', 'Mild', 'Medium', 'Hot'][dish.spice]);
@@ -25,12 +32,38 @@
 		}, 500);
 	}
 
+	async function share() {
+		const url = `${site.url}/menu/${dish.id}`;
+		const text = `${dish.name} — ${inr(dish.price)} at SpiceRoute, Bandra West`;
+		try {
+			if (navigator.share) {
+				await navigator.share({ title: dish.name, text, url });
+				return;
+			}
+			throw new Error('no share api');
+		} catch {
+			try {
+				await navigator.clipboard.writeText(url);
+				shared = true;
+				window.setTimeout(() => (shared = false), 2000);
+			} catch {
+				// Clipboard unavailable — nothing to do.
+			}
+		}
+	}
+
 	const jsonLd = $derived({
 		'@context': 'https://schema.org',
 		'@type': 'MenuItem',
 		name: dish.name,
 		description: dish.desc,
-		offers: { '@type': 'Offer', price: dish.price, priceCurrency: 'INR' },
+		image: `${site.url}/images/${dish.image}-1200.jpg`,
+		offers: {
+			'@type': 'Offer',
+			price: dish.price,
+			priceCurrency: 'INR',
+			availability: 'https://schema.org/InStock'
+		},
 		suitableForDiet: dish.veg ? 'https://schema.org/VegetarianDiet' : undefined
 	});
 </script>
@@ -39,6 +72,13 @@
 	<title>{dish.name} — {inr(dish.price)} · SpiceRoute Restaurant &amp; Bistro</title>
 	<meta name="description" content="{dish.name} — {dish.desc} Order online or dine in at SpiceRoute, Bandra West, Mumbai." />
 	<link rel="canonical" href="{site.url}/menu/{dish.id}" />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="{dish.name} — {inr(dish.price)} · SpiceRoute" />
+	<meta property="og:description" content={dish.desc} />
+	<meta property="og:url" content="{site.url}/menu/{dish.id}" />
+	<meta property="og:image" content="{site.url}/images/{dish.image}-1200.jpg" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:image" content="{site.url}/images/{dish.image}-1200.jpg" />
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`}
 </svelte:head>
@@ -101,6 +141,24 @@
 				<button type="button" onclick={add} class="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-gold px-6 font-bold text-cocoa-deep transition-transform duration-200 hover:scale-[1.02]">
 					<Plus size={18} aria-hidden="true" /> {added ? 'Added to Order ✓' : `Add ${qty > 1 ? `${qty} × ` : ''}· ${inr(dish.price * qty)}`}
 				</button>
+				<button
+					type="button"
+					onclick={() => favourites.toggle(dish.id)}
+					aria-pressed={favourites.has(dish.id)}
+					aria-label={favourites.has(dish.id) ? `Remove ${dish.name} from favourites` : `Save ${dish.name} to favourites`}
+					class="flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors duration-200 {favourites.has(dish.id)
+						? 'border-red-700 bg-red-50 text-red-700'
+						: 'border-line bg-white text-muted hover:border-red-700 hover:text-red-700'}"
+				>
+					<Heart size={20} fill={favourites.has(dish.id) ? 'currentColor' : 'none'} aria-hidden="true" />
+				</button>
+				<button
+					type="button"
+					onclick={share}
+					class="flex h-12 min-w-12 items-center justify-center gap-2 rounded-full border-2 border-line bg-white px-4 font-bold text-muted transition-colors duration-200 hover:border-gold hover:text-cocoa"
+				>
+					<Share2 size={18} aria-hidden="true" /> {shared ? 'Link copied!' : 'Share'}
+				</button>
 			</div>
 
 			<div class="mt-8 space-y-5">
@@ -131,6 +189,25 @@
 			</div>
 		</div>
 	</div>
+
+	{#if pairs.length > 0}
+		<section class="mt-16" aria-label="Pairs well with">
+			<h2 class="font-display text-[clamp(1.5rem,4vw,2rem)] font-bold">Pairs Well With</h2>
+			<p class="mt-1 text-muted">Our kitchen’s suggestions for a complete meal.</p>
+			<div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+				{#each pairs as p (p.id)}
+					<a href="/menu/{p.dish.id}" class="group flex min-w-0 items-center gap-4 rounded-3xl border border-line bg-white p-4 shadow-sm transition-shadow duration-300 hover:shadow-lg">
+						<Picture name={p.dish.image} alt={p.dish.alt} width={800} height={533} sizes="120px" imgClass="h-20 w-20 shrink-0 rounded-2xl object-cover" />
+						<span class="min-w-0">
+							<span class="block truncate font-display text-lg font-bold group-hover:text-maroon">{p.dish.name}</span>
+							<span class="mt-0.5 block text-sm text-muted">{p.why}</span>
+							<span class="mt-1 block font-bold text-maroon">{inr(p.dish.price)}</span>
+						</span>
+					</a>
+				{/each}
+			</div>
+		</section>
+	{/if}
 
 	{#if related.length > 0}
 		<section class="mt-16" aria-label="Related dishes">

@@ -4,18 +4,53 @@
 	import { inr } from '#lib/data/site.ts';
 
 	let { open = $bindable(false) }: { open: boolean } = $props();
+	let panel: HTMLElement | null = $state(null);
+	let previouslyFocused: HTMLElement | null = null;
+
+	// Keyboard support: Escape closes, Tab is trapped inside the drawer,
+	// and focus returns to the element that opened it.
+	$effect(() => {
+		if (!open) return;
+		previouslyFocused = document.activeElement as HTMLElement | null;
+		panel?.querySelector<HTMLElement>('[data-close]')?.focus();
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				open = false;
+				return;
+			}
+			if (e.key !== 'Tab' || !panel) return;
+			const focusables = panel.querySelectorAll<HTMLElement>(
+				'a[href], button:not([disabled]), input, textarea, select, [tabindex]:not([tabindex="-1"])'
+			);
+			if (focusables.length === 0) return;
+			const first = focusables[0];
+			const last = focusables[focusables.length - 1];
+			if (e.shiftKey && document.activeElement === first) {
+				e.preventDefault();
+				last.focus();
+			} else if (!e.shiftKey && document.activeElement === last) {
+				e.preventDefault();
+				first.focus();
+			}
+		};
+		document.addEventListener('keydown', onKey);
+		return () => {
+			document.removeEventListener('keydown', onKey);
+			previouslyFocused?.focus();
+		};
+	});
 </script>
 
 {#if open}
 	<div class="fixed inset-0 z-[70]" role="dialog" aria-modal="true" aria-label="Your order">
 		<button type="button" aria-label="Close cart" onclick={() => (open = false)} class="absolute inset-0 bg-cocoa-deep/60 backdrop-blur-[2px]"></button>
-		<aside class="absolute top-0 right-0 flex h-full w-full max-w-md flex-col bg-cream shadow-2xl">
+		<aside bind:this={panel} class="absolute top-0 right-0 flex h-full w-full max-w-md flex-col bg-cream shadow-2xl">
 			<div class="flex items-center justify-between border-b border-line bg-cocoa-deep px-5 py-4 text-white">
 				<h2 class="flex items-center gap-2 font-display text-xl font-bold">
 					<ShoppingBag size={22} aria-hidden="true" /> Your Order
 					{#if cart.count > 0}<span class="rounded-full bg-gold px-2.5 py-0.5 text-xs font-bold text-cocoa-deep">{cart.count}</span>{/if}
 				</h2>
-				<button type="button" onclick={() => (open = false)} aria-label="Close cart" class="flex h-12 w-12 items-center justify-center rounded-full transition-colors hover:bg-white/10">
+				<button type="button" data-close onclick={() => (open = false)} aria-label="Close cart" class="flex h-12 w-12 items-center justify-center rounded-full transition-colors hover:bg-white/10">
 					<X size={24} aria-hidden="true" />
 				</button>
 			</div>

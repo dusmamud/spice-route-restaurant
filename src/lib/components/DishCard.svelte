@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { Flame, Plus } from '@lucide/svelte';
+	import { Flame, Heart, Plus } from '@lucide/svelte';
 	import Picture from '#lib/components/Picture.svelte';
 	import Stars from '#lib/components/Stars.svelte';
 	import { addToOrder } from '#lib/cart.svelte.ts';
+	import { favourites } from '#lib/favourites.svelte.ts';
 	import { drawer } from '#lib/drawer.svelte.ts';
 	import { inr, type Dish } from '#lib/data/site.ts';
 
@@ -53,14 +54,25 @@
 		</div>
 		<p class="mt-3 line-clamp-2 flex-1 text-sm leading-relaxed text-muted">{dish.desc}</p>
 		<div class="mt-4 flex gap-2">
-			<a href="/menu/{dish.id}" class="flex min-h-12 flex-1 items-center justify-center rounded-full border-2 border-cocoa font-bold text-cocoa transition-colors duration-200 hover:bg-cocoa hover:text-white">View Dish</a>
+			<a href="/menu/{dish.id}" class="flex min-h-12 flex-1 items-center justify-center rounded-full border-2 border-cocoa text-sm font-bold text-cocoa transition-colors duration-200 hover:bg-cocoa hover:text-white">View Dish</a>
 			<button
 				type="button"
 				onclick={add}
-				class="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full bg-gold font-bold text-cocoa-deep transition-transform duration-200 hover:scale-[1.02]"
+				class="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full bg-gold text-sm font-bold text-cocoa-deep transition-transform duration-200 hover:scale-[1.02]"
 				aria-label="Add {dish.name} to order"
 			>
 				<Plus size={18} aria-hidden="true" />{added ? 'Added ✓' : 'Add'}
+			</button>
+			<button
+				type="button"
+				onclick={() => favourites.toggle(dish.id)}
+				aria-pressed={favourites.has(dish.id)}
+				aria-label={favourites.has(dish.id) ? `Remove ${dish.name} from favourites` : `Save ${dish.name} to favourites`}
+				class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-200 {favourites.has(dish.id)
+					? 'border-red-700 bg-red-50 text-red-700'
+					: 'border-line text-muted hover:border-red-700 hover:text-red-700'}"
+			>
+				<Heart size={20} fill={favourites.has(dish.id) ? 'currentColor' : 'none'} aria-hidden="true" />
 			</button>
 		</div>
 	</div>

@@ -7,14 +7,25 @@
 	const explore = [
 		{ label: 'Full Menu', href: '/menu' },
 		{ label: 'Order Online', href: '/order' },
+		{ label: 'Track Your Order', href: '/track-order' },
 		{ label: 'Book a Table', href: '/reservations' },
 		{ label: 'Offers', href: '/offers' },
-		{ label: 'Gallery', href: '/gallery' },
-		{ label: 'Private Dining & Catering', href: '/catering' }
+		{ label: 'Gift Cards', href: '/gift-cards' },
+		{ label: 'SpiceRoute Rewards', href: '/loyalty' },
+		{ label: 'Gallery', href: '/gallery' }
 	];
 	const about = [
 		{ label: 'Our Story', href: '/about' },
+		{ label: 'Meet the Chefs', href: '/chefs' },
+		{ label: 'Set Menus & Tasting', href: '/set-menus' },
+		{ label: 'Private Dining & Catering', href: '/catering' },
+		{ label: 'Events', href: '/events' },
 		{ label: 'Reviews', href: '/reviews' },
+		{ label: 'Press', href: '/press' },
+		{ label: 'Careers', href: '/careers' },
+		{ label: 'Allergen & Dietary Guide', href: '/allergens' },
+		{ label: 'Accessibility', href: '/accessibility' },
+		{ label: 'First Visit Guide', href: '/first-visit' },
 		{ label: 'FAQ', href: '/faq' },
 		{ label: 'Contact', href: '/contact' },
 		{ label: 'Privacy Policy', href: '/privacy' },
@@ -31,21 +42,21 @@
 					A culinary journey of flavors — multi-cuisine dining with a perfect blend of tradition and modern taste, in the heart of Bandra West.
 				</p>
 				<div class="mt-5 flex items-center gap-3">
-					<a href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="SpiceRoute on Instagram" class="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 transition-colors duration-200 hover:bg-gold hover:text-cocoa-deep"><SocialIcon network="instagram" size={20} /></a>
-					<a href="https://www.facebook.com/" target="_blank" rel="noopener" aria-label="SpiceRoute on Facebook" class="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 transition-colors duration-200 hover:bg-gold hover:text-cocoa-deep"><SocialIcon network="facebook" size={20} /></a>
-					<a href="https://x.com/" target="_blank" rel="noopener" aria-label="SpiceRoute on X" class="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 transition-colors duration-200 hover:bg-gold hover:text-cocoa-deep"><SocialIcon network="x" size={20} /></a>
+					<a href={site.socials.instagram} target="_blank" rel="noopener" aria-label="SpiceRoute on Instagram" class="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 transition-colors duration-200 hover:bg-gold hover:text-cocoa-deep"><SocialIcon network="instagram" size={20} /></a>
+					<a href={site.socials.facebook} target="_blank" rel="noopener" aria-label="SpiceRoute on Facebook" class="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 transition-colors duration-200 hover:bg-gold hover:text-cocoa-deep"><SocialIcon network="facebook" size={20} /></a>
+					<a href={site.socials.x} target="_blank" rel="noopener" aria-label="SpiceRoute on X" class="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 transition-colors duration-200 hover:bg-gold hover:text-cocoa-deep"><SocialIcon network="x" size={20} /></a>
 				</div>
 			</div>
 			<nav aria-label="Explore">
 				<h2 class="font-display text-lg font-bold text-white">Explore</h2>
-				<ul class="mt-4 space-y-2.5 text-sm">
-					{#each explore as l}<li><a class="transition-colors hover:text-gold-soft" href={l.href}>{l.label}</a></li>{/each}
+				<ul class="mt-4 space-y-1 text-sm">
+					{#each explore as l}<li><a class="flex min-h-11 items-center transition-colors hover:text-gold-soft" href={l.href}>{l.label}</a></li>{/each}
 				</ul>
 			</nav>
 			<nav aria-label="About">
 				<h2 class="font-display text-lg font-bold text-white">About</h2>
-				<ul class="mt-4 space-y-2.5 text-sm">
-					{#each about as l}<li><a class="transition-colors hover:text-gold-soft" href={l.href}>{l.label}</a></li>{/each}
+				<ul class="mt-4 space-y-1 text-sm">
+					{#each about as l}<li><a class="flex min-h-11 items-center transition-colors hover:text-gold-soft" href={l.href}>{l.label}</a></li>{/each}
 				</ul>
 			</nav>
 			<div>
