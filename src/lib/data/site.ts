@@ -9,7 +9,7 @@ export const site = {
 	phoneHref: 'tel:+919820012345',
 	whatsappHref: 'https://wa.me/919820012345',
 	email: 'hello@spiceroute.in',
-	url: 'https://spice-route-restaurant.pages.dev',
+	url: 'https://spiceroute-bistro.pages.dev',
 	address: 'SpiceRoute Restaurant & Bistro, 2nd Floor, Linking Road, Bandra West, Mumbai 400050, India',
 	addressShort: 'Linking Road, Bandra West, Mumbai',
 	hours: '11:30 AM – 11:00 PM, all days',

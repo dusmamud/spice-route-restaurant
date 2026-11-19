@@ -2,7 +2,7 @@
 
 A Culinary Journey of Flavors — multi-cuisine dining (Indian, Continental, Asian, desserts) in Bandra West, Mumbai. Frontend-only website with mock data.
 
-**Live:** https://spice-route-restaurant.pages.dev
+**Live:** https://spiceroute-bistro.pages.dev
 
 ## Stack
 
